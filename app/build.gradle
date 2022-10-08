@@ -15,8 +15,6 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField("String", "BASE_URL", "\"https://store-eu-hz-5.ufile.io\"")
-
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += ["room.schemaLocation":
