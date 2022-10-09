@@ -1,6 +1,6 @@
 package com.example.gallerysample.presentation.gallery
 
-import com.example.gallerysample.data.repository.Folder
+import com.example.gallerysample.data.repository.MediaFile
 import com.example.gallerysample.presentation.base.BaseAction
 import com.example.gallerysample.presentation.base.BaseSideEffect
 
@@ -13,7 +13,7 @@ sealed class Action : BaseAction {
 
 sealed class Change {
     object LoadFilesStarted : Change()
-    data class FilesLoaded(val folders: List<Folder>) : Change()
+    data class FileLoaded(val mediaFile: MediaFile) : Change()
     object Error : Change()
 
     data class FolderOpened(val folderName: String) : Change()

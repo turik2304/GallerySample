@@ -33,6 +33,7 @@ sealed class GalleryItem {
         override val folderName: String,
         val filePath: String,
         val fileName: String,
+        val fileDate: Long,
         val fileType: FileType,
         val url: String?,
     ) : GalleryItem() {

@@ -3,7 +3,6 @@ package com.example.gallerysample.presentation.gallery
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.gallerysample.data.repository.DropBoxRepository
-import com.example.gallerysample.data.repository.FileType
 import com.example.gallerysample.data.repository.MediaStoreRepository
 import com.example.gallerysample.presentation.base.BaseViewModel
 import com.example.gallerysample.presentation.base.Reducer
@@ -25,25 +24,26 @@ class GalleryViewModel(
             is Change.LoadFilesStarted -> {
                 State.Loading
             }
-            is Change.FilesLoaded -> {
-                val folders = change.folders.map {
-                    val files = it.files.map { file ->
-                        GalleryItem.File(
-                            isLoading = false,
-                            fileName = file.fileName,
-                            folderName = file.folderName,
-                            filePath = file.filePath,
-                            fileType = file.fileType,
-                            url = null
-                        )
-                    }
-                    GalleryItem.Folder(
+            is Change.FileLoaded -> {
+                val file = GalleryItem.File(
+                    isLoading = false,
+                    fileName = change.mediaFile.fileName,
+                    folderName = change.mediaFile.folderName,
+                    filePath = change.mediaFile.filePath,
+                    fileDate = change.mediaFile.fileDate,
+                    fileType = change.mediaFile.fileType,
+                    url = null
+                )
+                if (state is State.Content) {
+                    state.copy(state.folders.appendFile(file))
+                } else {
+                    val folder = GalleryItem.Folder(
                         isLoading = false,
-                        folderName = it.folderName,
-                        files = files
+                        folderName = file.folderName,
+                        files = listOf(file)
                     )
+                    State.Content(folders = listOf(folder), openedFolderName = null)
                 }
-                State.Content(folders = folders, openedFolderName = null)
             }
             is Change.Error -> {
                 State.Error
@@ -127,16 +127,15 @@ class GalleryViewModel(
 
     private fun bindActionLoadData(): Flow<Change> {
         return actions.filterIsInstance<Action.LoadMediaFiles>()
-            .map {
-                try {
-                    val files = mediaStoreRepository.loadFolders()
-                    Change.FilesLoaded(files)
-                } catch (e: Exception) {
-                    Log.d(TAG, e.stackTraceToString())
-                    Change.Error
-                }
+            .onEach {
+                viewModelScope.launch { mediaStoreRepository.loadFolders() }
             }
-            .onStart { emit(Change.LoadFilesStarted) }
+            .flatMapMerge { mediaStoreRepository.filesFlow }
+            .map {
+                val c = Change.FileLoaded(it)
+                Log.d("qweqwe", "$c")
+                c
+            }
     }
 
     private fun bindActionOpenFolder(): Flow<Change> {
@@ -158,17 +157,41 @@ class GalleryViewModel(
                     flow {
                         emit(Change.UploadFileStarted(action.folderName, action.filePath))
                         val url = dropBoxRepository.uploadFile(File(action.filePath))
-                        if (url != null) {
-                            emit(Change.UploadFileSuccess(action.folderName, action.filePath, url))
-                        } else {
-                            emit(Change.UploadFileError(action.folderName, action.filePath))
-                        }
+                        emit(Change.UploadFileSuccess(action.folderName, action.filePath, url))
                     }
                 } catch (e: Exception) {
                     Log.d(TAG, e.stackTraceToString())
                     flowOf(Change.UploadFileError(action.folderName, action.filePath))
                 }
             }
+    }
+
+    private fun List<GalleryItem.File>.toFolders(): List<GalleryItem.Folder> {
+        return this.groupBy { it.folderName }.map { (folderName, files) ->
+            GalleryItem.Folder(
+                isLoading = false,
+                folderName = folderName,
+                files = files.sortedByDescending { it.fileDate }
+            )
+        }.sortedBy { it.folderName }
+    }
+
+    private fun List<GalleryItem.Folder>.appendFile(file: GalleryItem.File): List<GalleryItem.Folder> {
+        var isFileAdded = false
+        val folders = this.map { folder ->
+            if (folder.folderName == file.folderName && !folder.files.contains(file)) {
+                val updatedFiles = (folder.files + file).sortedByDescending { it.fileDate }
+                isFileAdded = true
+                folder.copy(files = updatedFiles)
+            } else {
+                folder
+            }
+        }
+        return if (isFileAdded) {
+            folders
+        } else {
+            (this + GalleryItem.Folder(isLoading = false, folderName = file.folderName, listOf(file))).sortedBy { it.folderName }
+        }
     }
 
     private fun List<GalleryItem.Folder>.updateFileState(

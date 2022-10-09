@@ -3,11 +3,6 @@ package com.example.gallerysample.data.repository
 import android.graphics.Bitmap
 import android.net.Uri
 
-data class Folder(
-    val folderName: String,
-    val files: List<MediaFile>,
-)
-
 data class MediaFile(
     val fileName: String,
     val folderName: String,

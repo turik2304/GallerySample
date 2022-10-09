@@ -1,6 +1,7 @@
 package com.example.gallerysample.presentation.gallery.adapter
 
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
