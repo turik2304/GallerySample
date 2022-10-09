@@ -1,5 +1,8 @@
 package com.example.gallerysample.data.repository
 
+import android.net.Uri
+import android.provider.MediaStore
+import com.example.gallerysample.GalleryApp
 import com.example.gallerysample.data.network.api.ShareFileApi
 import com.example.gallerysample.data.network.api.UploadFileApi
 import com.example.gallerysample.data.network.request.*
@@ -28,20 +31,11 @@ class DropBoxRepository(
     suspend fun uploadFile(file: File): String? {
         return withContext(dispatcher) {
             if (file.length() > MAX_FILE_BYTE_SIZE) {
-//                uploadLargeFile(file)
-                return@withContext null
+                uploadLargeFile(file)
             } else {
                 uploadSmallFile(file)
             }
             shareFile(file.dropBoxPath())
-        }
-    }
-
-    fun test(file: File) {
-        File("/storage/emulated/0/Download/", "test.mp4").outputStream().use { stream ->
-            splitFile(file).forEach {
-                stream.write(it)
-            }
         }
     }
 

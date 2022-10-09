@@ -14,13 +14,6 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += ["room.schemaLocation":
-                                      "$projectDir/schemas".toString()]
-            }
-        }
     }
 
     buildTypes {
@@ -30,7 +23,7 @@ android {
         }
         applicationVariants.all { variant ->
             variant.outputs.each { output ->
-                output.outputFileName = "bitconce_${variant.versionName}_${variant.name}.apk"
+                output.outputFileName = "GalleryApp_${variant.versionName}_${variant.name}.apk"
             }
         }
     }
@@ -71,12 +64,11 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
-    def room_version = "2.4.3"
-    implementation "androidx.room:room-runtime:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
-
     def koin_version = "3.2.2"
     implementation "io.insert-koin:koin-core:$koin_version"
     implementation "io.insert-koin:koin-android:$koin_version"
+
+    def glide_version = "4.13.2"
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
 }
