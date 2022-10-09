@@ -63,7 +63,8 @@ class MediaStoreRepository(
         folderColumn: String,
     ) {
         val projection = arrayOf(pathColumn, fileNameColumn, folderColumn, fileDateColumn)
-        val cursor = contentResolver.query(uri, projection, null, null, null)
+        val sortOrder = MediaStore.MediaColumns.DATE_MODIFIED + " DESC"
+        val cursor = contentResolver.query(uri, projection, null, null, sortOrder)
         try {
             cursor!!.moveToFirst()
             do {
