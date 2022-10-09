@@ -59,9 +59,9 @@ class MediaStoreRepository(
                     val filePath = cursor.getString(cursor.getColumnIndexOrThrow(pathColumn))
                     val fileDate = cursor.getLong(cursor.getColumnIndexOrThrow(fileDateColumn))
                     val fileType = when (uri) {
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI -> FileType.IMAGE
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI -> FileType.VIDEO
-                        else -> FileType.UNKNOWN
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI -> FileType.Image(previewUri = Uri.parse(filePath))
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI -> FileType.Video(previewBitmap = getVideoPreview(filePath))
+                        else -> FileType.Unknown
                     }
                     val fileState = MediaFile(
                         fileName = fileName,
@@ -69,7 +69,6 @@ class MediaStoreRepository(
                         filePath = filePath,
                         fileDate = fileDate,
                         fileType = fileType,
-                        previewBitmap = getPreviewBitmap(filePath, fileType)
                     )
                     add(fileState)
                 } while (cursor.moveToNext())
@@ -81,13 +80,8 @@ class MediaStoreRepository(
     }
 
     @Suppress("DEPRECATION")
-    private fun getPreviewBitmap(filePath: String, fileType: FileType): Bitmap? {
-        val thumbnail = when (fileType) {
-            FileType.IMAGE -> MediaStore.Images.Thumbnails.MINI_KIND
-            FileType.VIDEO -> MediaStore.Video.Thumbnails.MINI_KIND
-            FileType.UNKNOWN -> return null
-        }
-        return ThumbnailUtils.createVideoThumbnail(filePath, thumbnail)
+    private fun getVideoPreview(filePath: String): Bitmap? {
+        return ThumbnailUtils.createVideoThumbnail(filePath, MediaStore.Video.Thumbnails.MINI_KIND)
     }
 
 }

@@ -7,6 +7,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gallerysample.R
+import com.example.gallerysample.data.repository.FileType
 import com.example.gallerysample.databinding.ItemFileBinding
 
 class GalleryAdapter(
@@ -53,34 +54,43 @@ class GalleryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     @Suppress("DEPRECATION")
     fun bind(item: GalleryItem) {
         currentItem = item
-        if (item.previewBitmap != null) {
-            binding.ivBackground.setImageBitmap(item.previewBitmap)
-        } else {
-            binding.ivBackground.setImageDrawable(null)
-        }
-
-        when (item) {
-            is GalleryItem.File -> {
-                binding.ivFolder.isGone = true
-                binding.ivFileType.isVisible = item.isVideo
-                binding.tvName.text = item.fileName
-                if (item.isLoading) {
-                    binding.ivProgress.isVisible = item.isLoading
-                    binding.ivStatus.isGone = true
-                } else {
-                    binding.ivProgress.isGone = true
-                    binding.ivStatus.isVisible = item.url != null
+        with(binding) {
+            when (item) {
+                is GalleryItem.File -> {
+                    renderPreview(item.fileType)
+                    ivFolder.isGone = true
+                    ivFileType.isVisible = item.fileType is FileType.Video
+                    tvName.text = item.fileName
+                    if (item.isLoading) {
+                        ivProgress.isVisible = item.isLoading
+                        ivStatus.isGone = true
+                    } else {
+                        ivProgress.isGone = true
+                        ivStatus.isVisible = item.url != null
+                    }
+                }
+                is GalleryItem.Folder -> {
+                    renderPreview(item.previewFileType)
+                    ivFolder.isVisible = true
+                    ivFileType.isGone = true
+                    ivProgress.isGone = true
+                    ivStatus.isGone = true
+                    tvName.text = item.folderName
                 }
             }
-            is GalleryItem.Folder -> {
-                item.previewBitmap?.let {
-                    binding.ivBackground.setImageBitmap(it)
-                }
-                binding.ivFolder.isVisible = true
-                binding.ivFileType.isGone = true
-                binding.ivProgress.isGone = true
-                binding.ivStatus.isGone = true
-                binding.tvName.text = item.folderName
+        }
+    }
+
+    private fun renderPreview(fileType: FileType?) {
+        when (fileType) {
+            is FileType.Image -> {
+                binding.ivBackground.setImageURI(fileType.previewUri)
+            }
+            is FileType.Video -> {
+                binding.ivBackground.setImageBitmap(fileType.previewBitmap)
+            }
+            null, FileType.Unknown -> {
+                binding.ivBackground.setImageResource(0)
             }
         }
     }

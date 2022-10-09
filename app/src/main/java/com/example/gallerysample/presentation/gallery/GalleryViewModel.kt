@@ -33,8 +33,7 @@ class GalleryViewModel(
                             fileName = file.fileName,
                             folderName = file.folderName,
                             filePath = file.filePath,
-                            isVideo = file.fileType == FileType.VIDEO,
-                            previewBitmap = file.previewBitmap,
+                            fileType = file.fileType,
                             url = null
                         )
                     }

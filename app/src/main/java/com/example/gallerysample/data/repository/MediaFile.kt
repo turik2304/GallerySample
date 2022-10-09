@@ -1,6 +1,7 @@
 package com.example.gallerysample.data.repository
 
 import android.graphics.Bitmap
+import android.net.Uri
 
 data class Folder(
     val folderName: String,
@@ -13,11 +14,10 @@ data class MediaFile(
     val filePath: String,
     val fileDate: Long,
     val fileType: FileType,
-    val previewBitmap: Bitmap?,
 )
 
-enum class FileType {
-    IMAGE,
-    VIDEO,
-    UNKNOWN
+sealed class FileType {
+    data class Image(val previewUri: Uri) : FileType()
+    data class Video(val previewBitmap: Bitmap?) : FileType()
+    object Unknown : FileType()
 }

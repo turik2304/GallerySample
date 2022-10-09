@@ -1,28 +1,27 @@
 package com.example.gallerysample.presentation.gallery.adapter
 
-import android.graphics.Bitmap
+import com.example.gallerysample.data.repository.FileType
 
 sealed class GalleryItem {
 
     abstract val isLoading: Boolean
     abstract val folderName: String
-    abstract val previewBitmap: Bitmap?
 
     data class Folder(
         override val isLoading: Boolean,
         override val folderName: String,
         val files: List<File>,
     ) : GalleryItem() {
-        override val previewBitmap: Bitmap? = files.firstOrNull()?.previewBitmap
+        val previewFileType: FileType?
+            get() = files.firstOrNull()?.fileType
     }
 
     data class File(
         override val isLoading: Boolean,
         override val folderName: String,
-        override val previewBitmap: Bitmap?,
         val filePath: String,
         val fileName: String,
-        val isVideo: Boolean,
+        val fileType: FileType,
         val url: String?,
     ) : GalleryItem()
 
