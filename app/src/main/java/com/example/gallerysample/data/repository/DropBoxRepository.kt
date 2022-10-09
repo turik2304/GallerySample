@@ -28,7 +28,7 @@ class DropBoxRepository(
 
     private val gson: Gson = Gson()
 
-    suspend fun uploadFile(file: File): String? {
+    suspend fun uploadFile(file: File): String {
         return withContext(dispatcher) {
             if (file.length() > MAX_FILE_BYTE_SIZE) {
                 uploadLargeFile(file)

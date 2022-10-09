@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.gallerysample.databinding.FragmentGalleryBinding
-import com.example.gallerysample.presentation.base.BaseSideEffect
 import com.example.gallerysample.presentation.gallery.adapter.GalleryAdapter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -87,8 +86,8 @@ class GalleryFragment : Fragment() {
                 is State.Content -> {
                     rvContent.isVisible = true
                     progressBar.isGone = true
-                    if (state.openedFolder != null) {
-                        adapter.updateItems(state.openedFolder.files)
+                    if (state.openedFolderName != null) {
+                        adapter.updateItems(state.openedFolder!!.files)
                     } else {
                         adapter.updateItems(state.folders)
                     }

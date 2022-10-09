@@ -9,8 +9,11 @@ sealed class State : BaseState {
 
     data class Content(
         val folders: List<GalleryItem.Folder>,
+        val openedFolderName: String?,
+    ) : State() {
         val openedFolder: GalleryItem.Folder?
-    ) : State()
+            get() = folders.find { it.folderName == openedFolderName }
+    }
 
     object Error : State()
 }

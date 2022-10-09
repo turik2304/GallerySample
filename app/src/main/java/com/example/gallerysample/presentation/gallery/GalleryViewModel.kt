@@ -44,15 +44,14 @@ class GalleryViewModel(
                         files = files
                     )
                 }
-                State.Content(folders = folders, openedFolder = null)
+                State.Content(folders = folders, openedFolderName = null)
             }
             is Change.Error -> {
                 State.Error
             }
             is Change.FolderOpened -> {
                 if (state is State.Content) {
-                    val openFolder = state.folders.find { it.folderName == change.folderName }!!
-                    state.copy(openedFolder = openFolder)
+                    state.copy(openedFolderName = change.folderName)
                 } else {
                     state
                 }
@@ -64,7 +63,7 @@ class GalleryViewModel(
                         state
                     }
                     state is State.Content && state.openedFolder != null -> {
-                        state.copy(openedFolder = null)
+                        state.copy(openedFolderName = null)
                     }
                     else -> {
                         state

@@ -21,7 +21,7 @@ class GalleryAdapter(
             binding.root.setOnClickListener {
                 currentItem?.let {
                     when (it) {
-                        is GalleryItem.File -> onItemClick(it.filePath, it.fileName)
+                        is GalleryItem.File -> onItemClick(it.filePath, it.folderName)
                         is GalleryItem.Folder -> onItemClick(null, it.folderName)
                     }
                 }
@@ -58,13 +58,19 @@ class GalleryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         } else {
             binding.ivBackground.setImageDrawable(null)
         }
+
         when (item) {
             is GalleryItem.File -> {
                 binding.ivFolder.isGone = true
                 binding.ivFileType.isVisible = item.isVideo
-                binding.ivProgress.isVisible = item.isLoading
-                binding.ivStatus.isVisible = item.url != null
                 binding.tvName.text = item.fileName
+                if (item.isLoading) {
+                    binding.ivProgress.isVisible = item.isLoading
+                    binding.ivStatus.isGone = true
+                } else {
+                    binding.ivProgress.isGone = true
+                    binding.ivStatus.isVisible = item.url != null
+                }
             }
             is GalleryItem.Folder -> {
                 item.previewBitmap?.let {
