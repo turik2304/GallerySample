@@ -2,6 +2,7 @@ package com.example.gallerysample.presentation.gallery
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.gallerysample.data.network.NetworkBuilder
 import com.example.gallerysample.data.repository.DropBoxRepository
 import com.example.gallerysample.data.repository.MediaStoreRepository
 import com.example.gallerysample.presentation.base.BaseViewModel
@@ -14,7 +15,7 @@ import java.io.File
 class GalleryViewModel(
     private val dropBoxRepository: DropBoxRepository,
     private val mediaStoreRepository: MediaStoreRepository,
-) : BaseViewModel<Action, State, BackPressSideEffect>() {
+) : BaseViewModel<Action, State, SideEffect>() {
 
     override val initialState: State
         get() = State.Loading
@@ -58,7 +59,7 @@ class GalleryViewModel(
             is Change.FolderClosed -> {
                 when {
                     state is State.Content && state.openedFolder == null -> {
-                        viewModelScope.launch { sideEffects.emit(BackPressSideEffect) }
+                        viewModelScope.launch { sideEffects.emit(SideEffect.BackPress) }
                         state
                     }
                     state is State.Content && state.openedFolder != null -> {
@@ -131,11 +132,7 @@ class GalleryViewModel(
                 viewModelScope.launch { mediaStoreRepository.loadFolders() }
             }
             .flatMapMerge { mediaStoreRepository.filesFlow }
-            .map {
-                val c = Change.FileLoaded(it)
-                Log.d("qweqwe", "$c")
-                c
-            }
+            .map { Change.FileLoaded(it) }
     }
 
     private fun bindActionOpenFolder(): Flow<Change> {
@@ -161,19 +158,12 @@ class GalleryViewModel(
                     }
                 } catch (e: Exception) {
                     Log.d(TAG, e.stackTraceToString())
+                    if (e is NetworkBuilder.OAuthError) {
+                        sideEffects.emit(SideEffect.AuthError)
+                    }
                     flowOf(Change.UploadFileError(action.folderName, action.filePath))
                 }
             }
-    }
-
-    private fun List<GalleryItem.File>.toFolders(): List<GalleryItem.Folder> {
-        return this.groupBy { it.folderName }.map { (folderName, files) ->
-            GalleryItem.Folder(
-                isLoading = false,
-                folderName = folderName,
-                files = files.sortedByDescending { it.fileDate }
-            )
-        }.sortedBy { it.folderName }
     }
 
     private fun List<GalleryItem.Folder>.appendFile(file: GalleryItem.File): List<GalleryItem.Folder> {

@@ -2,4 +2,6 @@
     <string name="app_name">GallerySample</string>
     <string name="copy_link">Copy Link</string>
     <string name="share">Share</string>
+    <string name="oauth_token">OAuth Token</string>
+    <string name="auth">Auth</string>
 </resources>

@@ -1,8 +1,5 @@
 package com.example.gallerysample.data.repository
 
-import android.net.Uri
-import android.provider.MediaStore
-import com.example.gallerysample.GalleryApp
 import com.example.gallerysample.data.network.api.ShareFileApi
 import com.example.gallerysample.data.network.api.UploadFileApi
 import com.example.gallerysample.data.network.request.*

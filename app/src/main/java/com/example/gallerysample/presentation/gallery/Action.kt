@@ -24,4 +24,7 @@ sealed class Change {
     data class UploadFileError(val folderName: String, val filePath: String) : Change()
 }
 
-object BackPressSideEffect : BaseSideEffect
+sealed class SideEffect : BaseSideEffect {
+    object BackPress : SideEffect()
+    object AuthError : SideEffect()
+}

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,7 +14,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.gallerysample.R
 import com.example.gallerysample.databinding.FragmentGalleryBinding
+import com.example.gallerysample.presentation.auth.AuthFragment
 import com.example.gallerysample.presentation.gallery.adapter.GalleryAdapter
 import com.example.gallerysample.presentation.share.ShareDialogFragment
 import kotlinx.coroutines.flow.launchIn
@@ -116,8 +119,18 @@ class GalleryFragment : Fragment() {
         }
     }
 
-    private fun renderEffect(effect: BackPressSideEffect) {
-        requireActivity().finish()
+    private fun renderEffect(effect: SideEffect) {
+        when (effect) {
+            SideEffect.AuthError -> {
+                Toast.makeText(requireContext(), "Auth Error!", Toast.LENGTH_SHORT).show()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, AuthFragment())
+                    .commit()
+            }
+            SideEffect.BackPress -> {
+                requireActivity().finish()
+            }
+        }
     }
 
     override fun onDestroyView() {
