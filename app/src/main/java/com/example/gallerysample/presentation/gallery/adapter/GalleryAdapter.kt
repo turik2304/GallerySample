@@ -11,7 +11,7 @@ import com.example.gallerysample.data.repository.FileType
 import com.example.gallerysample.databinding.ItemFileBinding
 
 class GalleryAdapter(
-    private val onItemClick: (filePath: String?, folderName: String) -> Unit,
+    private val onItemClick: (filePath: String?, folderName: String, url: String?) -> Unit,
 ) : RecyclerView.Adapter<GalleryViewHolder>() {
 
     private var items: List<GalleryItem> = emptyList()
@@ -22,8 +22,8 @@ class GalleryAdapter(
             binding.root.setOnClickListener {
                 currentItem?.let {
                     when (it) {
-                        is GalleryItem.File -> onItemClick(it.filePath, it.folderName)
-                        is GalleryItem.Folder -> onItemClick(null, it.folderName)
+                        is GalleryItem.File -> onItemClick(it.filePath, it.folderName, it.url)
+                        is GalleryItem.Folder -> onItemClick(null, it.folderName, null)
                     }
                 }
             }
@@ -51,13 +51,12 @@ class GalleryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     var currentItem: GalleryItem? = null
 
-    @Suppress("DEPRECATION")
     fun bind(item: GalleryItem) {
         currentItem = item
         with(binding) {
             when (item) {
                 is GalleryItem.File -> {
-                    renderPreview(item.fileType)
+//                    renderPreview(item.fileType)
                     ivFolder.isGone = true
                     ivFileType.isVisible = item.fileType is FileType.Video
                     tvName.text = item.fileName
@@ -70,7 +69,7 @@ class GalleryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     }
                 }
                 is GalleryItem.Folder -> {
-                    renderPreview(item.previewFileType)
+//                    renderPreview(item.previewFileType)
                     ivFolder.isVisible = true
                     ivFileType.isGone = true
                     ivProgress.isGone = true

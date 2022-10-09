@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.gallerysample.databinding.FragmentGalleryBinding
 import com.example.gallerysample.presentation.gallery.adapter.GalleryAdapter
+import com.example.gallerysample.presentation.share.ShareDialogFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -28,13 +29,18 @@ class GalleryFragment : Fragment() {
     private val viewModel: GalleryViewModel by viewModel()
 
     private val adapter: GalleryAdapter = GalleryAdapter(
-        onItemClick = { filePath, folderName ->
-            val action = if (filePath != null) {
-                Action.UploadFile(folderName, filePath)
-            } else {
-                Action.OpenFolder(folderName)
+        onItemClick = { filePath, folderName, url ->
+            when {
+                filePath != null && url != null -> {
+                    showShareScreen(url)
+                }
+                filePath != null && url == null -> {
+                    viewModel.dispatch(Action.UploadFile(folderName, filePath))
+                }
+                else -> {
+                    viewModel.dispatch(Action.OpenFolder(folderName))
+                }
             }
-            viewModel.dispatch(action)
         }
     )
 
@@ -78,6 +84,12 @@ class GalleryFragment : Fragment() {
 
     private fun requestPermissions() {
         permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+
+    private fun showShareScreen(url: String) {
+        if (childFragmentManager.findFragmentByTag(ShareDialogFragment.TAG) == null) {
+            ShareDialogFragment.newInstance(url).show(childFragmentManager, ShareDialogFragment.TAG)
+        }
     }
 
     private fun renderState(state: State) {
