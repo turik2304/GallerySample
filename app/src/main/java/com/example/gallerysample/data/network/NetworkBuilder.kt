@@ -12,7 +12,7 @@ object NetworkBuilder {
     private const val CONNECT_TIMEOUT: Long = 10
 
     private const val TOKEN =
-        "sl.BQyjxm0Wqy5jpuFhr2g5ipn_WcVMlMGs5csIn6DkRZYnZ4NRyqM_6VPx3dt48Ky2cwKLaIs8-A8HmMKxvqHF_2goDGapj2MhtAryDuHTckAOAc3NJTSycBSYBlzNs6MPu-bprTnT"
+        "sl.BQxoqfeV2A7bCcqiw7WKJiDNCLYjcYAJb7wsNG2AJxp-OzEmBYIk6wV4G6vD1UOxticpqyAIzZMpsqOZIxv-kKYmG5I4b_dsfxZVJqpAClrvL-chVY9rbUGWajw34LIy9cCg29WE"
 
     fun buildOkhttp(): OkHttpClient {
         return OkHttpClient.Builder()

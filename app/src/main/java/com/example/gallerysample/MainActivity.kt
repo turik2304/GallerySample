@@ -32,10 +32,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(viewBinding.root)
         requestPermissions()
         viewBinding.tvText.setOnClickListener {
-            getPaths(allVideosUri)?.let { path ->
+            getPaths(allVideosUri).let { path ->
                 lifecycleScope.launch {
-                    val r = repository.uploadFile(File(path))
-                    Log.d("qweqwe", r)
+                    val r = repository.uploadFile(File(path[1]))
+                    Log.d("qweqwe", r.orEmpty())
                 }
             }
         }
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         ) ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
     }
 
-    private fun getPaths(uri: Uri): String? {
+    private fun getPaths(uri: Uri): List<String> {
 //        val picFolders: ArrayList<imageFolder> = ArrayList<imageFolder>()
 //        val picPaths = ArrayList<String>()
         val (projection, dataColumn) = when (uri) {
@@ -67,17 +67,19 @@ class MainActivity : AppCompatActivity() {
                     MediaStore.Video.Media.BUCKET_ID
                 ) to MediaStore.Video.VideoColumns.DATA
             }
-            else -> return null
+            else -> return emptyList()
         }
         val cursor = this.contentResolver.query(uri, projection, null, null, null)
         try {
             cursor?.moveToFirst()
-            do {
-                val path = cursor?.getString(cursor.getColumnIndexOrThrow(dataColumn))
-                if (path != null) {
-                    return path
-                }
-            } while (cursor!!.moveToNext())
+            return buildList {
+                do {
+                    val path = cursor?.getString(cursor.getColumnIndexOrThrow(dataColumn))
+                    if (path != null) {
+                        add(path)
+                    }
+                } while (cursor!!.moveToNext())
+            }
 
 //            do {
 //                val folds = imageFolder()
@@ -108,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return null
+        return emptyList()
     }
 }
 
