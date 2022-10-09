@@ -1,18 +1,21 @@
 package com.example.gallerysample.presentation.gallery.adapter
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gallerysample.R
 import com.example.gallerysample.data.repository.FileType
 import com.example.gallerysample.databinding.ItemFileBinding
+import com.squareup.picasso.Picasso
 
 class GalleryAdapter(
     private val onItemClick: (filePath: String?, folderName: String, url: String?) -> Unit,
-) : RecyclerView.Adapter<GalleryViewHolder>() {
+) : RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>() {
 
     private var items: List<GalleryItem> = emptyList()
 
@@ -39,59 +42,62 @@ class GalleryAdapter(
     }
 
     fun updateItems(items: List<GalleryItem>) {
+        val diff = DiffUtil.calculateDiff(GalleryDiffUtil(this.items, items))
         this.items = items
-        notifyDataSetChanged()
+        diff.dispatchUpdatesTo(this)
     }
 
-}
+    inner class GalleryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-class GalleryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val binding: ItemFileBinding = ItemFileBinding.bind(view)
 
-    val binding: ItemFileBinding = ItemFileBinding.bind(view)
+        var currentItem: GalleryItem? = null
 
-    var currentItem: GalleryItem? = null
-
-    fun bind(item: GalleryItem) {
-        currentItem = item
-        with(binding) {
-            when (item) {
-                is GalleryItem.File -> {
-//                    renderPreview(item.fileType)
-                    ivFolder.isGone = true
-                    ivFileType.isVisible = item.fileType is FileType.Video
-                    tvName.text = item.fileName
-                    if (item.isLoading) {
-                        ivProgress.isVisible = item.isLoading
-                        ivStatus.isGone = true
-                    } else {
+        fun bind(item: GalleryItem) {
+            currentItem = item
+            with(binding) {
+                when (item) {
+                    is GalleryItem.File -> {
+                        renderPreview(item.fileType)
+                        ivFolder.isGone = true
+                        ivFileType.isVisible = item.fileType is FileType.Video
+                        tvName.text = item.fileName
+                        if (item.isLoading) {
+                            ivProgress.isVisible = item.isLoading
+                            ivStatus.isGone = true
+                        } else {
+                            ivProgress.isGone = true
+                            ivStatus.isVisible = item.url != null
+                        }
+                    }
+                    is GalleryItem.Folder -> {
+                        renderPreview(item.previewFileType)
+                        ivFolder.isVisible = true
+                        ivFileType.isGone = true
                         ivProgress.isGone = true
-                        ivStatus.isVisible = item.url != null
+                        ivStatus.isGone = true
+                        tvName.text = item.folderName
                     }
                 }
-                is GalleryItem.Folder -> {
-//                    renderPreview(item.previewFileType)
-                    ivFolder.isVisible = true
-                    ivFileType.isGone = true
-                    ivProgress.isGone = true
-                    ivStatus.isGone = true
-                    tvName.text = item.folderName
+            }
+        }
+
+        private fun renderPreview(fileType: FileType?) {
+            when (fileType) {
+                is FileType.Image -> {
+                    Picasso.get()
+                        .load(Uri.parse("file://${fileType.previewUri}"))
+                        .fit()
+                        .centerInside()
+                        .into(binding.ivBackground)
+                }
+                is FileType.Video -> {
+                    binding.ivBackground.setImageBitmap(fileType.previewBitmap)
+                }
+                null, FileType.Unknown -> {
+                    binding.ivBackground.setImageResource(0)
                 }
             }
         }
     }
-
-    private fun renderPreview(fileType: FileType?) {
-        when (fileType) {
-            is FileType.Image -> {
-                binding.ivBackground.setImageURI(fileType.previewUri)
-            }
-            is FileType.Video -> {
-                binding.ivBackground.setImageBitmap(fileType.previewBitmap)
-            }
-            null, FileType.Unknown -> {
-                binding.ivBackground.setImageResource(0)
-            }
-        }
-    }
-
 }

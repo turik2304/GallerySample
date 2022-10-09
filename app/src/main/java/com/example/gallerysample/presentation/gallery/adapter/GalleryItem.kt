@@ -7,6 +7,10 @@ sealed class GalleryItem {
     abstract val isLoading: Boolean
     abstract val folderName: String
 
+    abstract fun areItemsTheSame(other: GalleryItem): Boolean
+
+    abstract fun areContentsTheSame(other: GalleryItem): Boolean
+
     data class Folder(
         override val isLoading: Boolean,
         override val folderName: String,
@@ -14,6 +18,14 @@ sealed class GalleryItem {
     ) : GalleryItem() {
         val previewFileType: FileType?
             get() = files.firstOrNull()?.fileType
+
+        override fun areItemsTheSame(other: GalleryItem): Boolean {
+            return folderName == (other as? Folder)?.folderName
+        }
+
+        override fun areContentsTheSame(other: GalleryItem): Boolean {
+            return isLoading == other.isLoading && files.firstOrNull()?.areContentsTheSame(other) == true
+        }
     }
 
     data class File(
@@ -23,6 +35,17 @@ sealed class GalleryItem {
         val fileName: String,
         val fileType: FileType,
         val url: String?,
-    ) : GalleryItem()
+    ) : GalleryItem() {
+        override fun areItemsTheSame(other: GalleryItem): Boolean {
+            return filePath == (other as? File)?.filePath
+        }
 
+        override fun areContentsTheSame(other: GalleryItem): Boolean {
+            return if (other is File) {
+                isLoading == other.isLoading && url == other.url
+            } else {
+                false
+            }
+        }
+    }
 }
