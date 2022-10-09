@@ -24,7 +24,17 @@ sealed class GalleryItem {
         }
 
         override fun areContentsTheSame(other: GalleryItem): Boolean {
-            return isLoading == other.isLoading && files.firstOrNull()?.areContentsTheSame(other) == true
+            return if (other is Folder) {
+                val currentFile = files.firstOrNull()
+                val otherFile = other.files.firstOrNull()
+                if (currentFile != null && otherFile != null) {
+                    isLoading == other.isLoading && currentFile.areContentsTheSame(otherFile)
+                } else {
+                    true
+                }
+            } else {
+                false
+            }
         }
     }
 
@@ -44,6 +54,7 @@ sealed class GalleryItem {
         override fun areContentsTheSame(other: GalleryItem): Boolean {
             return if (other is File) {
                 isLoading == other.isLoading && url == other.url
+                        && filePath == other.filePath
             } else {
                 false
             }
