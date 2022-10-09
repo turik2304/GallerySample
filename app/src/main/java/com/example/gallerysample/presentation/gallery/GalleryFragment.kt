@@ -1,6 +1,7 @@
 package com.example.gallerysample.presentation.gallery
 
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,15 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class GalleryFragment : Fragment() {
 
+    private val permissionLauncher: ActivityResultLauncher<Array<String>> =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            if (result.values.all { it }) {
+                viewModel.dispatch(Action.LoadMediaFiles)
+            } else {
+                Toast.makeText(requireContext(), "Permission not granted! Reload App!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     private var _binding: FragmentGalleryBinding? = null
 
     private val binding get() = _binding!!
@@ -46,14 +56,6 @@ class GalleryFragment : Fragment() {
             }
         }
     )
-
-    private val permissionLauncher: ActivityResultLauncher<String> by lazy {
-        requireActivity().registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                viewModel.dispatch(Action.LoadMediaFiles)
-            }
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentGalleryBinding.inflate(inflater, container, false)
@@ -86,7 +88,12 @@ class GalleryFragment : Fragment() {
     }
 
     private fun requestPermissions() {
-        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        val permissions = if (Build.VERSION.SDK_INT >= 33) {
+            arrayOf(Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        permissionLauncher.launch(permissions)
     }
 
     private fun showShareScreen(url: String) {
